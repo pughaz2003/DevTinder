@@ -2,18 +2,22 @@ const express = require("express");
 
 const app = express();
 
-app.delete("/user", (req, res) => {
-    res.send("deleted successfully!");
-    });
+const {adminAuth} = require("./middleware/auth");
 
-app.get("/user", (req, res) => {
-    res.send({name:'pughaz',age:'21'});
-    });
+app.get("/admin", adminAuth);
 
-app.post("/user", (req, res) => {
+
+
+    
+
+app.get("/admin/getAllData", (req, res) => {
 res.send("hello from the server!");
 });
 
+app.get("/admin/deleteUser", (req, res) => {
+  res.send("deleted");
+  });
+  
 
 
 app.listen(3000, () => {
