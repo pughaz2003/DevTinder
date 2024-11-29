@@ -1,6 +1,7 @@
 const express = require("express");
 const connectDB = require("./config/database.js");
 
+
 const app = express();
 const User = require('./models/user.js')
 
@@ -68,17 +69,34 @@ app.delete("/users",async (req,res)=>{
    }
  })
 
- app.patch("/update",async (req,res)=>{
+ app.patch("/update/:userId",async (req,res)=>{
 
-  const userId =req.body._id;
-  const data = req.body
+  const userId = req.params?.userId;
+  const data = req.body;
+
+
+
    try{
+    
+    const ALLOWED_UPDATES = ["firstName","lastName","age","gender","skills"];
+
+    const isAllowedUpdates = Object.keys(data).every( (k)=> 
+     ALLOWED_UPDATES.includes(k)
+    );
+    if(!isAllowedUpdates){
+    throw new Error("updates not allowed");
+    }
+
+    if(data.skills.length>10){
+      throw new Error("only 10 characters is allowed");
+    }
+
    const users = await User.findByIdAndUpdate({_id:userId},data);
    res.send("user updated successfully");
- }catch{
-     res.status(404).send("something went wrong");
+    }catch(error){
+     res.status(404).send(error.message);
    }
- })
+ });
  
 
 
