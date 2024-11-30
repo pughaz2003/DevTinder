@@ -6,12 +6,11 @@ const  {validateSignup} = require("./utils/validation.js")
 const bcrypt = require("bcrypt");
 
 app.use(express.json());
+
+
+
 app.post('/signup', async (req,res) => {
- 
-  
-
-
-try{
+ try{
   const {firstName,lastName,emailId,password} = req.body;
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -32,11 +31,34 @@ try{
 }catch(err){
   res.status(400).send("ERROR:"+ err.message);
 }
+});
+
+app.post("/login",async (req,res)=>{
+  try{
+   const {emailId,password}=req.body;
+
+   const user = await User.findOne({emailId:emailId});
+   if(!user) {
+   throw new Error("invalid credential")
+   }
+
+
+  const passwordValid = bcrypt.compare(password, user.password)
+  if(!passwordValid){
+   throw new Error("invalid credentials");
+  }else{
+    res.send("login succesfully")
+  }
+
+  }catch(err){
+    res.status(400).send("ERROR:"+ err.message); 
+  }
+});
 
 
 
 
-})
+
 app.get("/user",async(req,res)=>{
 
   const userEmail = req.body.emailId;
