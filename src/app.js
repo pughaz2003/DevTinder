@@ -4,8 +4,13 @@ const app = express();
 const User = require('./models/user.js')
 const  {validateSignup} = require("./utils/validation.js")
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require('jsonwebtoken');
+
 
 app.use(express.json());
+app.use(cookieParser());
+
 
 
 
@@ -24,8 +29,8 @@ app.post('/signup', async (req,res) => {
     emailId,
     password:hashedPassword  
   });
-  validateSignup(req);
-
+  await validateSignup(req);
+  
   await user.save();
   res.send('user added successfully');
 }catch(err){
@@ -37,23 +42,61 @@ app.post("/login",async (req,res)=>{
   try{
    const {emailId,password}=req.body;
 
-   const user = await User.findOne({emailId:emailId});
+
+    const user = await User.findOne({emailId:emailId});
    if(!user) {
    throw new Error("invalid credential")
    }
 
+ const passwordValid = await bcrypt.compare(password, user.password)
+  
+ 
+  if(passwordValid){
 
-  const passwordValid = bcrypt.compare(password, user.password)
-  if(!passwordValid){
-   throw new Error("invalid credentials");
-  }else{
+    const token = await jwt.sign({ _id: user._id }, 'godfather543');
+    console.log(token);
+
+    // Set the token in a cookie
+    res.cookie("token", token); 
+ 
     res.send("login succesfully")
+  }else{
+   
+    throw new Error("invalid credentials");
   }
 
   }catch(err){
     res.status(400).send("ERROR:"+ err.message); 
   }
 });
+
+
+app.get("/profile",async(req,res)=>{
+  try{
+const cookies = req.cookies;
+
+const {token} = cookies;
+if(!token){
+  throw new Error("invalid credentials")
+}
+   
+const decoded = await jwt.verify(token, 'godfather543');
+console.log(decoded)
+const {_id} = decoded;
+console.log("THE LOGGRED IN USER IS:"+_id);
+
+const user = await User.findById(_id);
+if(!user){
+  throw new Error("ther is no user exist")
+}
+
+res.send(user);
+
+  }catch(err){
+    res.status(400).send("ERROR:"+ err.message); 
+  }
+
+})
 
 
 
