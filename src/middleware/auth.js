@@ -20,7 +20,7 @@ if(!user){
 req.user = user;
 next();
 }catch(err){
-  res.status(404).send("ERROR:" +err);
+  res.status(404).send("ERROR:" +err.message);
 }
 
 
