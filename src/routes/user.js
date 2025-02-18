@@ -1,6 +1,7 @@
 const express = require("express");
 const userRouter = express.Router();
 const connectionRequest = require("../models/connectionRequest.js")
+const User = require("../models/user.js")
 
 const {adminAuth} = require("../middleware/auth.js")
 
@@ -56,7 +57,42 @@ userRouter.get("/user/connections",adminAuth,async(req,res)=>{
     }
 
 
-})
+});
+userRouter.get("/feed",adminAuth,async(req,res)=>{
+try{
+    const loggedInUser = req.user;
+  const connectionRequests = await connectionRequest.find({
+    $or: [
+        { fromUserId: loggedInUser._id},
+        { toUserId: loggedInUser._id }
+      ]
+
+  }).select("fromUserId toUserId")
+
+const hideUserFromFeed = new Set();
+connectionRequests.forEach((req)=>{
+    hideUserFromFeed.add(req.fromUserId.toString());
+    hideUserFromFeed.add(req.toUserId.toString());
+});
+console.log(hideUserFromFeed)
+
+const users = await User.find({
+    $and:[
+        { _id: {$nin: Array.from(hideUserFromFeed) } },
+        { _id: {$ne: loggedInUser._id} }
+
+    ]
+
+    
+}).select("firstName lastName skill age")
+
+
+  res.send(users);
+
+}catch(error){
+    res.status(400).send("ERROR"+error.message);
+}
+});
 
 
 
