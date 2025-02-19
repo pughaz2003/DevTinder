@@ -7,7 +7,7 @@ const  {validateSignup} = require("../utils/validation.js");
 
 authRouter.post('/signup', async (req,res) => {
     try{
-     const {firstName,lastName,emailId,password} = req.body;
+     const {firstName,lastName,emailId,password,photoUrl} = req.body;
    
      const hashedPassword = await bcrypt.hash(password, 10);
      
@@ -18,6 +18,7 @@ authRouter.post('/signup', async (req,res) => {
        firstName,
        lastName,
        emailId,
+       photoUrl,
        password:hashedPassword  
      });
      await validateSignup(req);
