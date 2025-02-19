@@ -53,7 +53,7 @@ authRouter.post('/signup', async (req,res) => {
         expiresIn: '1h' 
       }); 
    
-      res.send("login succesfully")
+      res.send(user)
     }else{
      
       throw new Error("invalid credentials!!!!!!!!");
